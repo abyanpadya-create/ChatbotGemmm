@@ -1,12 +1,12 @@
 // ============================================
 // KONFIGURASI
 // ============================================
-const API_KEY = 'AQ.Ab8RN6K-d-Kvb85_LLfG1rpyv05UIMJ...'; // ← GANTI API KEY LO
+const API_KEY = 'AIzaSy...'; // ← GANTI dengan API key baru lo (harus diawali AIzaSy)
 const MODEL = 'gemini-3.6-flash';
 const API_URL = `https://generativelanguage.googleapis.com/v1beta/models/${MODEL}:streamGenerateContent?alt=sse&key=${API_KEY}`;
 
 // ============================================
-// SYSTEM PROMPT (KEPRIBADIAN BOT)
+// SYSTEM PROMPT
 // ============================================
 const SYSTEM_PROMPT = `Kamu adalah XDEIRA, asisten AI santai buatan tim XDEIRA.
 
@@ -47,15 +47,10 @@ function setLoading(isLoading) {
   inputEl.disabled = isLoading;
 }
 
-// Tambahin tanda tangan di awal & akhir kalau belum ada
 function wrapSignature(text) {
   let result = text.trim();
-  if (!result.startsWith(SIGN)) {
-    result = SIGN + '\n' + result;
-  }
-  if (!result.endsWith(SIGN)) {
-    result = result + '\n' + SIGN;
-  }
+  if (!result.startsWith(SIGN)) result = SIGN + '\n' + result;
+  if (!result.endsWith(SIGN)) result = result + '\n' + SIGN;
   return result;
 }
 
@@ -63,23 +58,15 @@ function wrapSignature(text) {
 // STREAMING KE GEMINI
 // ============================================
 async function getBotReply(userText, outputEl) {
-  chatHistory.push({
-    role: 'user',
-    parts: [{ text: userText }]
-  });
+  chatHistory.push({ role: 'user', parts: [{ text: userText }] });
 
   const response = await fetch(API_URL, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({
-      systemInstruction: {
-        parts: [{ text: SYSTEM_PROMPT }]
-      },
+      systemInstruction: { parts: [{ text: SYSTEM_PROMPT }] },
       contents: chatHistory,
-      generationConfig: {
-        temperature: 0.95,
-        maxOutputTokens: 2048
-      }
+      generationConfig: { temperature: 0.95, maxOutputTokens: 2048 }
     })
   });
 
@@ -105,7 +92,6 @@ async function getBotReply(userText, outputEl) {
       if (!line.startsWith('data: ')) continue;
       const raw = line.slice(6).trim();
       if (!raw || raw === '[DONE]') continue;
-
       try {
         const json = JSON.parse(raw);
         const token = json.candidates?.[0]?.content?.parts?.[0]?.text || '';
@@ -114,26 +100,19 @@ async function getBotReply(userText, outputEl) {
           outputEl.textContent = fullText;
           messagesEl.scrollTop = messagesEl.scrollHeight;
         }
-      } catch (e) {
-        // skip
-      }
+      } catch (e) {}
     }
   }
 
-  // Paksa tanda tangan di awal & akhir
   fullText = wrapSignature(fullText);
   outputEl.textContent = fullText;
 
-  chatHistory.push({
-    role: 'model',
-    parts: [{ text: fullText }]
-  });
-
+  chatHistory.push({ role: 'model', parts: [{ text: fullText }] });
   return fullText;
 }
 
 // ============================================
-// KIRIM PESAN
+// KIRIM
 // ============================================
 async function send() {
   const text = inputEl.value.trim();
@@ -141,15 +120,12 @@ async function send() {
 
   addMessage(text, 'user');
   inputEl.value = '';
-
   const botBubble = addMessage('', 'bot');
 
   setLoading(true);
   try {
     await getBotReply(text, botBubble);
-    if (!botBubble.textContent) {
-      botBubble.textContent = wrapSignature('(ga ada balasan)');
-    }
+    if (!botBubble.textContent) botBubble.textContent = wrapSignature('(ga ada balasan)');
   } catch (err) {
     botBubble.textContent = wrapSignature('❌ Error: ' + err.message);
     console.error(err);
@@ -160,15 +136,13 @@ async function send() {
 }
 
 // ============================================
-// EVENT LISTENER
+// EVENT
 // ============================================
 sendBtn.addEventListener('click', send);
-
 inputEl.addEventListener('keydown', (e) => {
   if (e.key === 'Enter' && !e.shiftKey) {
     e.preventDefault();
     send();
   }
 });
-
 inputEl.focus();
