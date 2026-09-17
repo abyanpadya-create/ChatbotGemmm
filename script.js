@@ -1,7 +1,7 @@
 // ============================================
 // KONFIGURASI
 // ============================================
-const API_KEY = 'AIzaSy...'; // ← GANTI dengan API key baru lo (harus diawali AIzaSy)
+const API_KEY = ''; // ← GANTI dengan API key baru lo (harus diawali AIzaSy)
 const MODEL = 'gemini-3.6-flash';
 const API_URL = `https://generativelanguage.googleapis.com/v1beta/models/${MODEL}:streamGenerateContent?alt=sse&key=${API_KEY}`;
 
